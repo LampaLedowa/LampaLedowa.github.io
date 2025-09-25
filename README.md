@@ -1,26 +1,37 @@
-<body>
-<!-- partial:index.partial.html -->
-  <div class="content">
-    <h2>JumHc.PL</h2>
-    <p>JumHc.pl jest najlepszym serverem w polsce </p>
-  <!--partial -->
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+import time
 
-# Twój GitHub token
-token = 'ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+# Twoje dane logowania
+email = "twoj_email@example.com"
+password = "twoje_haslo"
 
-# Ustawienia nagłówków z autoryzacją
-headers = {
-    'Authorization': f'token {token}',
-    'Accept': 'application/vnd.github.v3+json'
-}
+# Uruchom przeglądarkę (wymaga zainstalowanego ChromeDriver)
+driver = webdriver.Chrome()
 
-# Przykład: pobierz dane o swoim koncie
-response = requests.get('https://api.github.com/user', headers=headers)
+# Wejdź na stronę logowania GitHub
+driver.get("https://github.com/login")
 
-if response.status_code == 200:
-    data = response.json()
-    print("Zalogowano jako:", data['login'])
+# Wypełnij login
+username_field = driver.find_element(By.ID, "login_field")
+username_field.send_keys(email)
+
+# Wypełnij hasło
+password_field = driver.find_element(By.ID, "password")
+password_field.send_keys(password)
+
+# Zatwierdź formularz
+password_field.send_keys(Keys.RETURN)
+
+# Poczekaj chwilę
+time.sleep(5)
+
+# Sprawdź, czy się udało
+if "GitHub" in driver.title:
+    print("Prawdopodobnie zalogowano.")
 else:
-    print("Błąd logowania:", response.status_code)
+    print("Coś poszło nie tak.")
 
-</body>
+# Zatrzymaj przeglądarkę
+# driver.quit()
