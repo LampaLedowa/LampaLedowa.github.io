@@ -1,1 +1,16 @@
-# LampaLedowa.github.io
+<body>
+<!-- partial:index.partial.html -->
+  <div class="card>
+    <div class"circle" style="--clr: #f40103">
+    <img src="imgl.pmg" class="logo">
+  </div>
+  <div class="content">
+    <h2>JumHc.PL</h2>
+    <p>JumHc.pl jest najlepszym serverem w polsce </p>
+  </br>zero faworyzacji.</p>
+    <a href "H">Explore More</a>
+  </div>
+  <img src="img2.png" class="product_img">
+</div>
+  <!--partial -->
+</body>
