@@ -5,17 +5,22 @@
     <p>JumHc.pl jest najlepszym serverem w polsce </p>
   <!--partial -->
 
-.form-box.register .animation{
-transform: translateX(120%);
-transtition: .7s ease;
-opacity: 0;
-filter: blur(10px);
+# Twój GitHub token
+token = 'ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+
+# Ustawienia nagłówków z autoryzacją
+headers = {
+    'Authorization': f'token {token}',
+    'Accept': 'application/vnd.github.v3+json'
 }
 
-.container.active .animation{
-transform: translateX(0%);
-opacity: 1;
-transition-delay:
-calc(.1s * var(--li));
+# Przykład: pobierz dane o swoim koncie
+response = requests.get('https://api.github.com/user', headers=headers)
+
+if response.status_code == 200:
+    data = response.json()
+    print("Zalogowano jako:", data['login'])
+else:
+    print("Błąd logowania:", response.status_code)
 
 </body>
