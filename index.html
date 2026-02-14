@@ -1,162 +1,164 @@
-<!doctype html>
-<html lang="pl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Sklep z itemami Minecraft — Marketplace</title>
-<meta name="description" content="Marketplace do sprzedaży itemów Minecraft — prosty sklep, koszyk, demo dla GitHub Pages">
-<style>
-:root{--accent:#6bdb6b;--dark:#0f1720;--muted:#9aa4b2}
-*{box-sizing:border-box}
-body{font-family:Inter,system-ui,Segoe UI,Arial;margin:0;background:linear-gradient(180deg,#041024 0%, #071a30 100%);color:#e6eef6;min-height:100vh}
-.container{max-width:1100px;margin:40px auto;padding:24px}
-header{display:flex;align-items:center;justify-content:space-between}
-.logo{display:flex;gap:12px;align-items:center}
-.logo .mark{width:56px;height:56px;background:linear-gradient(135deg,var(--accent),#2bd1ff);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#042;box-shadow:0 6px 18px rgba(0,0,0,.4)}
-h1{margin:0;font-size:1.6rem}
-p.lead{color:var(--muted);margin:8px 0 0}
-main{display:grid;grid-template-columns:1fr 360px;gap:28px;margin-top:28px}
-.card{background:rgba(255,255,255,0.03);padding:18px;border-radius:12px}
-.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
-.item{padding:12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);display:flex;flex-direction:column;gap:10px}
-.item .title{font-weight:600}
-.item .meta{color:var(--muted);font-size:.9rem}
-.btn{display:inline-block;padding:8px 12px;border-radius:8px;background:var(--accent);color:#042;text-decoration:none;font-weight:700;cursor:pointer;border:none}
-.btn.secondary{background:transparent;color:var(--accent);border:1px solid rgba(255,255,255,0.06)}
-.cart{position:sticky;top:24px}
-.cart h3{margin:0 0 8px}
-.cart-list{max-height:320px;overflow:auto;margin-bottom:12px}
-.cart-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.03)}
-.total{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin-top:12px}
-footer{margin-top:40px;text-align:center;color:var(--muted);font-size:.9rem}
-@media(max-width:900px){main{grid-template-columns:1fr} .cart{position:static}}
-</style>
-</head>
-<body>
-<div class="container">
-<header>
-<div class="logo">
-<div class="mark">MC</div>
-<div>
-<h1>MC Item Marketplace</h1>
-<p class="lead">Szybki demo-shop do sprzedaży itemów Minecraft — idealny jako strona GitHub Pages dla serwera.</p>
-</div>
-</div>
-<nav>
-<a class="btn" href="#items">Sklep</a>
-</nav>
-</header>
+'use client';
 
+import { useEffect, useRef, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
 
-<main>
-<section>
-<div class="card">
-<h2 id="items">Dostępne itemy</h2>
-<p class="lead">Dodaj, edytuj i sprzedawaj przedmioty. To tylko front-end demo — podłącz własne API lub plugin do serwera.</p>
-<div class="items" id="items-list">
-<!-- items injected by JS -->
-</div>
-</div>
+const symbols = ["🍒", "🍋", "🔔", "💎", "7️⃣"];
 
+export default function FakeCasinoApp() {
+  // 👤 login
+  const [user, setUser] = useState<string | null>(null);
+  const [loginInput, setLoginInput] = useState("");
 
-<div style="height:18px"></div>
+  // 💰 game state
+  const [balance, setBalance] = useState(1000);
+  const [bet, setBet] = useState(50);
+  const [rouletteResult, setRouletteResult] = useState<number | null>(null);
+  const [slot, setSlot] = useState(["❔", "❔", "❔"]);
+  const [spinning, setSpinning] = useState(false);
+  const [jackpot, setJackpot] = useState(5000);
+  const [wheelRotation, setWheelRotation] = useState(0);
 
+  // 🔊 sounds
+  const spinSound = useRef<HTMLAudioElement | null>(null);
+  const winSound = useRef<HTMLAudioElement | null>(null);
 
-<div class="card">
-<h2>Jak to działa?</h2>
-<ol>
-<li>Gracz wybiera item i dodaje go do koszyka.</li>
-<li>Na checkout pokazujemy instrukcję (np. komendę /give lub kod w panelu serwera).</li>
-<li>W praktyce: po otrzymaniu płatności serwer przyznaje przedmiot lub administracja potwierdza transakcję.</li>
-</ol>
-</div>
-</section>
+  // ================= LOAD / SAVE =================
+  useEffect(() => {
+    const savedUser = localStorage.getItem("casino_user");
+    const savedBalance = localStorage.getItem("casino_balance");
+    const savedJackpot = localStorage.getItem("casino_jackpot");
 
+    if (savedUser) setUser(savedUser);
+    if (savedBalance) setBalance(Number(savedBalance));
+    if (savedJackpot) setJackpot(Number(savedJackpot));
+  }, []);
 
-<aside class="cart card">
-<div class="cart-inner">
-<h3>Koszyk</h3>
-<div class="cart-list" id="cart-list">
-<p class="lead">Twój koszyk jest pusty.</p>
-</div>
-<div class="total"><span>Razem:</span><span id="cart-total">0 PLN</span></div>
-<div style="margin-top:12px;display:flex;gap:8px">
-<script>
-// Example items — edytuj lub podłącz API
-const items = [
-{id:1,name:'Diamentowy miecz Sharpness V',desc:'Legendarny miecz z enchantem Sharpness V',price:20,qty:1},
-{id:2,name:'Stack 64 obsydianu',desc:'Komplet bloków do budowy portalu lub bazy',price:5,qty:64},
-{id:3,name:'Elytra (naprawiona)',desc:'Skrzydła do latania — gotowe do użytku',price:50,qty:1},
-{id:4,name:'Kilof Efficiency X',desc:'Superszybki kilof',price:15,qty:1},
-{id:5,name:'Zestaw starterowy',desc:'Zbroja diamentowa + narzędzia',price:35,qty:1}
-];
+  useEffect(() => {
+    if (user) localStorage.setItem("casino_user", user);
+  }, [user]);
 
+  useEffect(() => {
+    localStorage.setItem("casino_balance", String(balance));
+  }, [balance]);
 
-const itemsList = document.getElementById('items-list');
-const cartList = document.getElementById('cart-list');
-const cartTotal = document.getElementById('cart-total');
-let cart = [];
+  useEffect(() => {
+    localStorage.setItem("casino_jackpot", String(jackpot));
+  }, [jackpot]);
 
+  // ================= LOGIN =================
+  const handleLogin = () => {
+    if (!loginInput.trim()) return;
+    setUser(loginInput.trim());
+  };
 
-function renderItems(){
-itemsList.innerHTML = '';
-items.forEach(it=>{
-const el = document.createElement('div'); el.className='item';
-el.innerHTML = `<div><div class="title">${it.name}</div><div class="meta">${it.desc}</div></div>
-<div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
-<div style="font-weight:700">${it.price} PLN</div>
-<div style="display:flex;gap:8px">
-<button class="btn secondary" onclick="addToCart(${it.id},false)">Dodaj</button>
-<button class="btn" onclick="addToCart(${it.id},true)">Kup teraz</button>
-</div>
-</div>`;
-itemsList.appendChild(el);
-});
-}
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem("casino_user");
+  };
 
+  // ================= ROULETTE =================
+  const spinRoulette = () => {
+    if (balance < bet) return;
 
-function formatPrice(n){return n + ' PLN'}
+    spinSound.current?.play().catch(() => {});
 
+    setBalance((b) => b - bet);
 
-function syncCart(){
-cartList.innerHTML='';
-if(cart.length===0){ cartList.innerHTML='<p class="lead">Twój koszyk jest pusty.</p>'; cartTotal.innerText='0 PLN'; return }
-let sum=0;
-cart.forEach(row=>{
-const div = document.createElement('div'); div.className='cart-row';
-div.innerHTML = `<div>${row.name} x${row.count}</div><div>${row.price*row.count} PLN</div>`;
-cartList.appendChild(div);
-sum += row.price*row.count;
-});
-cartTotal.innerText = formatPrice(sum);
-}
+    const result = Math.floor(Math.random() * 37);
+    setRouletteResult(result);
 
+    // 🎡 animate wheel
+    const extraSpin = 360 * (3 + Math.random() * 3);
+    setWheelRotation((r) => r + extraSpin);
 
-function addToCart(id,buyNow){
-const it = items.find(x=>x.id===id); if(!it) return;
-const existing = cart.find(x=>x.id===id);
-if(existing) existing.count++;
-else cart.push({id:it.id,name:it.name,price:it.price,count:1});
-syncCart();
-if(buyNow) checkout();
-}
+    // fake win chance
+    if (Math.random() < 0.45) {
+      const win = bet * 2;
+      setTimeout(() => {
+        setBalance((b) => b + win);
+        winSound.current?.play().catch(() => {});
+      }, 1200);
+    }
 
+    setJackpot((j) => j + Math.floor(bet * 0.1));
+  };
 
-function checkout(){
-if(cart.length===0){ alert('Koszyk pusty.'); return }
-// Demo checkout: show instructions
-let msg = 'DEMO CHECKOUT\n\nDziękujemy za zamówienie!\n\nSzczegóły transakcji:\n';
-cart.forEach(c=> msg += `- ${c.name} x${c.count}: ${c.price*c.count} PLN\n`);
-msg += '\nAby wydać przedmioty: Po otrzymaniu płatności, wykonaj komendę /give lub użyj panelu administracyjnego.\n';
-alert(msg);
-}
+  // ================= SLOTS =================
+  const spinSlots = () => {
+    if (balance < bet || spinning) return;
 
+    spinSound.current?.play().catch(() => {});
 
-document.getElementById('checkout').addEventListener('click',checkout);
-document.getElementById('clear').addEventListener('click',()=>{cart=[];syncCart()});
+    setSpinning(true);
+    setBalance((b) => b - bet);
 
+    setTimeout(() => {
+      const newSlot = [
+        symbols[Math.floor(Math.random() * symbols.length)],
+        symbols[Math.floor(Math.random() * symbols.length)],
+        symbols[Math.floor(Math.random() * symbols.length)],
+      ];
 
-renderItems(); syncCart();
-</script>
-</body>
-</html>
+      setSlot(newSlot);
+
+      // 🏆 jackpot
+      if (newSlot.every((s) => s === "7️⃣")) {
+        setBalance((b) => b + jackpot);
+        setJackpot(5000);
+        winSound.current?.play().catch(() => {});
+      }
+      // normal win
+      else if (newSlot[0] === newSlot[1] && newSlot[1] === newSlot[2]) {
+        setBalance((b) => b + bet * 5);
+        winSound.current?.play().catch(() => {});
+      }
+
+      setJackpot((j) => j + Math.floor(bet * 0.2));
+      setSpinning(false);
+    }, 1200);
+  };
+
+  const resetBalance = () => {
+    setBalance(1000);
+    setJackpot(5000);
+  };
+
+  // ================= LOGIN SCREEN =================
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black text-white p-6">
+        <Card className="bg-black/70 border-emerald-500 w-full max-w-md">
+          <CardContent className="p-6 space-y-4 text-center">
+            <h1 className="text-3xl font-bold">🎰 Fake Casino</h1>
+            <Input
+              placeholder="Nick..."
+              value={loginInput}
+              onChange={(e) => setLoginInput(e.target.value)}
+            />
+            <Button onClick={handleLogin} className="w-full">
+              Wejdź do kasyna
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // ================= MAIN APP =================
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-black to-emerald-950 p-6 text-white">
+      {/* sounds */}
+      <audio ref={spinSound} src="https://assets.mixkit.co/active_storage/sfx/2004/2004-preview.mp3" />
+      <audio ref={winSound} src="https://assets.mixkit.co/active_storage/sfx/1998/1998-preview.mp3" />
+
+      <div className="max-w-6xl mx-auto space-y-6">
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-4xl font-bold text-center"
+        >
+          🎰 Fake C
