@@ -1,164 +1,231 @@
-'use client';
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎰 Mini Kasyno</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top, #0f172a, #020617);
+      color: #e5e7eb;
+      text-align: center;
+    }
+    header {
+      background: #111827;
+      padding: 20px;
+      border-bottom: 1px solid #1f2937;
+    }
+    h1 { font-size: 2.2rem; }
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 30px 15px;
+      display: grid;
+      gap: 20px;
+    }
+    .card {
+      background: #111827;
+      padding: 25px;
+      border-radius: 18px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+    }
+    button {
+      margin-top: 12px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 10px;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:hover { background: #1d4ed8; }
+    .result { margin-top: 12px; font-size: 1.2rem; }
+    input {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: white;
+      margin-top: 8px;
+      width: 120px;
+      text-align: center;
+    }
+    footer {
+      margin-top: 30px;
+      padding: 20px;
+      color: #9ca3af;
+      border-top: 1px solid #1f2937;
+    }
+    .money {
+      font-size: 1.4rem;
+      margin-top: 6px;
+      color: #22c55e;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎰 Mini Kasyno</h1>
+    <p>FAKE MONEY • tylko zabawa</p>
+    <div class="money">Saldo: $<span id="balance">1000</span></div>
+    <div>
+      <input type="number" id="addMoneyInput" placeholder="Dodaj $" />
+      <button onclick="addMoney()">Dodaj kasę</button>
+    </div>
+  </header>
 
-import { useEffect, useRef, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { motion } from "framer-motion";
+  <main class="container">
 
-const symbols = ["🍒", "🍋", "🔔", "💎", "7️⃣"];
+    <!-- ROULETTE -->
+    <section class="card">
+      <h2>🎡 Ruletka</h2>
+      <p>Zakład: $100</p>
+      <button onclick="spinRoulette()">Zakręć</button>
+      <div id="rouletteResult" class="result"></div>
+    </section>
 
-export default function FakeCasinoApp() {
-  // 👤 login
-  const [user, setUser] = useState<string | null>(null);
-  const [loginInput, setLoginInput] = useState("");
+    <!-- POKER -->
+    <section class="card">
+      <h2>🃏 Poker (losowa karta)</h2>
+      <p>Zakład: $100 • Traf asa = wygrana x3</p>
+      <button onclick="drawCard()">Dobierz kartę</button>
+      <div id="pokerResult" class="result"></div>
+    </section>
 
-  // 💰 game state
-  const [balance, setBalance] = useState(1000);
-  const [bet, setBet] = useState(50);
-  const [rouletteResult, setRouletteResult] = useState<number | null>(null);
-  const [slot, setSlot] = useState(["❔", "❔", "❔"]);
-  const [spinning, setSpinning] = useState(false);
-  const [jackpot, setJackpot] = useState(5000);
-  const [wheelRotation, setWheelRotation] = useState(0);
+    <!-- SLOTS -->
+    <section class="card">
+      <h2>🎰 Sloty</h2>
+      <p>Zakład: $100 • 3 takie same = x5</p>
+      <button onclick="spinSlots()">Kręć sloty</button>
+      <div id="slotsResult" class="result"></div>
+    </section>
 
-  // 🔊 sounds
-  const spinSound = useRef<HTMLAudioElement | null>(null);
-  const winSound = useRef<HTMLAudioElement | null>(null);
+  </main>
 
-  // ================= LOAD / SAVE =================
-  useEffect(() => {
-    const savedUser = localStorage.getItem("casino_user");
-    const savedBalance = localStorage.getItem("casino_balance");
-    const savedJackpot = localStorage.getItem("casino_jackpot");
+  <footer>
+    <p>© 2026 Mini Kasyno • Fake money</p>
+  </footer>
 
-    if (savedUser) setUser(savedUser);
-    if (savedBalance) setBalance(Number(savedBalance));
-    if (savedJackpot) setJackpot(Number(savedJackpot));
-  }, []);
+  <script>
+    let balance = 1000;
+    const bet = 100;
 
-  useEffect(() => {
-    if (user) localStorage.setItem("casino_user", user);
-  }, [user]);
-
-  useEffect(() => {
-    localStorage.setItem("casino_balance", String(balance));
-  }, [balance]);
-
-  useEffect(() => {
-    localStorage.setItem("casino_jackpot", String(jackpot));
-  }, [jackpot]);
-
-  // ================= LOGIN =================
-  const handleLogin = () => {
-    if (!loginInput.trim()) return;
-    setUser(loginInput.trim());
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem("casino_user");
-  };
-
-  // ================= ROULETTE =================
-  const spinRoulette = () => {
-    if (balance < bet) return;
-
-    spinSound.current?.play().catch(() => {});
-
-    setBalance((b) => b - bet);
-
-    const result = Math.floor(Math.random() * 37);
-    setRouletteResult(result);
-
-    // 🎡 animate wheel
-    const extraSpin = 360 * (3 + Math.random() * 3);
-    setWheelRotation((r) => r + extraSpin);
-
-    // fake win chance
-    if (Math.random() < 0.45) {
-      const win = bet * 2;
-      setTimeout(() => {
-        setBalance((b) => b + win);
-        winSound.current?.play().catch(() => {});
-      }, 1200);
+    function updateBalance() {
+      document.getElementById("balance").textContent = balance;
     }
 
-    setJackpot((j) => j + Math.floor(bet * 0.1));
-  };
-
-  // ================= SLOTS =================
-  const spinSlots = () => {
-    if (balance < bet || spinning) return;
-
-    spinSound.current?.play().catch(() => {});
-
-    setSpinning(true);
-    setBalance((b) => b - bet);
-
-    setTimeout(() => {
-      const newSlot = [
-        symbols[Math.floor(Math.random() * symbols.length)],
-        symbols[Math.floor(Math.random() * symbols.length)],
-        symbols[Math.floor(Math.random() * symbols.length)],
-      ];
-
-      setSlot(newSlot);
-
-      // 🏆 jackpot
-      if (newSlot.every((s) => s === "7️⃣")) {
-        setBalance((b) => b + jackpot);
-        setJackpot(5000);
-        winSound.current?.play().catch(() => {});
+    function addMoney() {
+      const val = Number(document.getElementById("addMoneyInput").value);
+      if (!isNaN(val) && val > 0) {
+        balance += val;
+        updateBalance();
       }
-      // normal win
-      else if (newSlot[0] === newSlot[1] && newSlot[1] === newSlot[2]) {
-        setBalance((b) => b + bet * 5);
-        winSound.current?.play().catch(() => {});
+    }
+
+    function canPlay() {
+      if (balance < bet) {
+        alert("Brak kasy 😢 Dodaj fake money!");
+        return false;
       }
+      balance -= bet;
+      updateBalance();
+      return true;
+    }
 
-      setJackpot((j) => j + Math.floor(bet * 0.2));
-      setSpinning(false);
-    }, 1200);
-  };
+    // ROULETTE
+    function spinRoulette() {
+      if (!canPlay()) return;
+      const number = Math.floor(Math.random() * 37);
+      let win = false;
+      if (number === 7) { // lucky number
+        balance += bet * 10;
+        win = true;
+      }
+      updateBalance();
+      document.getElementById("rouletteResult").textContent =
+        "Wylosowano: " + number + (win ? " 🎉 JACKPOT!" : "");
+    }
 
-  const resetBalance = () => {
-    setBalance(1000);
-    setJackpot(5000);
-  };
+    // POKER
+    function drawCard() {
+      if (!canPlay()) return;
+      const cards = ["A", "K", "Q", "J", "10", "9", "8", "7"];
+      const card = cards[Math.floor(Math.random() * cards.length)];
+      let text = "Karta: " + card;
+      if (card === "A") {
+        balance += bet * 3;
+        text = "🔥 Trafiłeś ASA!";
+      }
+      updateBalance();
+      document.getElementById("pokerResult").textContent = text;
+    }
 
-  // ================= LOGIN SCREEN =================
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white p-6">
-        <Card className="bg-black/70 border-emerald-500 w-full max-w-md">
-          <CardContent className="p-6 space-y-4 text-center">
-            <h1 className="text-3xl font-bold">🎰 Fake Casino</h1>
-            <Input
-              placeholder="Nick..."
-              value={loginInput}
-              onChange={(e) => setLoginInput(e.target.value)}
-            />
-            <Button onClick={handleLogin} className="w-full">
-              Wejdź do kasyna
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+    // SLOTS
+    function spinSlots() {
+      if (!canPlay()) return;
+      const symbols = ["🍒", "🍋", "🔔", "⭐", "💎"];
+      const s1 = symbols[Math.floor(Math.random() * symbols.length)];
+      const s2 = symbols[Math.floor(Math.random() * symbols.length)];
+      const s3 = symbols[Math.floor(Math.random() * symbols.length)];
 
-  // ================= MAIN APP =================
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-black to-emerald-950 p-6 text-white">
-      {/* sounds */}
-      <audio ref={spinSound} src="https://assets.mixkit.co/active_storage/sfx/2004/2004-preview.mp3" />
-      <audio ref={winSound} src="https://assets.mixkit.co/active_storage/sfx/1998/1998-preview.mp3" />
+      let text = `${s1} ${s2} ${s3}`;
+      if (s1 === s2 && s2 === s3) {
+        balance += bet * 5;
+        text += " — 🎉 WYGRANA!";
+      }
+      updateBalance();
+      document.getElementById("slotsResult").textContent = text;
+    }
+  </script>
+</body>
+</html>
+ 
+</div>
 
-      <div className="max-w-6xl mx-auto space-y-6">
-        <motion.h1
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-4xl font-bold text-center"
-        >
-          🎰 Fake C
+    <div class="bet-controls">
+      <p>🎯 Twój zakład:</p>
+      <input type="number" id="betInput" value="100" />
+    </div>
+
+    <div class="xp">⭐ Poziom: <span id="level">1</span> | EXP: <span id="xp">0</span></div>
+  </header>
+
+  <main class="container">
+
+    <section class="card">
+      <h2>🎡 Ruletka</h2>
+      <div class="wheel" id="wheel">🎡</div>
+      <button onclick="spinRoulette()">Zakręć</button>
+      <div id="rouletteResult" class="result"></div>
+    </section>
+
+    <section class="card">
+      <h2>🃏 Poker (5 kart)</h2>
+      <button onclick="playPoker()">Rozdaj</button>
+      <div id="pokerResult" class="result"></div>
+    </section>
+
+    <section class="card">
+      <h2>🎰 Sloty</h2>
+      <div class="slots" id="slotsAnim">❔ ❔ ❔</div>
+      <button onclick="spinSlots()">Kręć sloty</button>
+      <div id="slotsResult" class="result"></div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>© 2026 Mini Kasyno ULTRA PRO • Fake money</p>
+  </footer>
+
+  <audio id="winSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+  <audio id="spinSound" src="https://actions.google.com/sounds/v1/casino/slot_machine.ogg"></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
